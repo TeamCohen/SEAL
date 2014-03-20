@@ -1,0 +1,164 @@
+/**************************************************************************
+ * Developed by Language Technologies Institute, Carnegie Mellon University
+ * Written by Richard Wang (rcwang#cs,cmu,edu)
+ **************************************************************************/
+package com.rcwang.seal.rank;
+
+import ghirl.graph.BasicGraph;
+import ghirl.graph.GraphId;
+//import ghirl.graph.NewBasicWalker;
+import ghirl.graph.BasicWalker;
+//import ghirl.graph.PageRankWalker;
+import ghirl.graph.Walker;
+import ghirl.util.Distribution;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+public class GraphBuilder {
+  public static Logger log = Logger.getLogger(GraphBuilder.class);
+  
+  /***** Start Cutting Here *****/
+  public static final int GRAPH_STEPS = 0;  // set to 0 to disable sampling
+  // [2 Seeds] 10:      %, 20:      %, 30:      %, 40: 88.96%, 50: 89.02%, 60: 89.06%, 70: 89.06%
+  // [3 Seeds] 10: 91.89%, 20: 91.91%, 30: 91.87%, 40: 91.88%, 50: 91.87%, 60: 91.85%, 70: 91.83%, 100: 91.83%
+  
+  // [2 Seeds] 100: 88.99%, 60: 89.00%, 50: 88.97%, 40: 88.93%, 30: 88.85%, 20: 88.65%
+  // [3 Seeds] 100: 91.90%, 60: 91.91%, 50: 91.92%, 40: 91.93%, 30: 91.95%, 20: 91.96%, 10: 91.92%
+  public int numLevels = 50;  // set to 50 for BasicWalker(), 20 for PageRankWalker()
+//  public static final double STAY_PROB = 0;
+//  public static final boolean USE_RELATION = true;
+  /***** End Cutting Here *****/
+  
+  public static final boolean USE_SAMPLING = (GRAPH_STEPS > 0);
+  private Map<String, Distribution> queryDistCache;
+  private BasicGraph basicGraph;
+    private Walker basicWalker; //, pageWalker;
+  private boolean graphModifiedSinceLastWalk = true;
+  public static enum WalkerType {NEWBASIC, PAGERANK}
+  
+  public GraphBuilder() {
+      //basicWalker = new NewBasicWalker();
+      basicWalker = new BasicWalker();      
+      //pageWalker = new PageRankWalker();
+    queryDistCache = new HashMap<String, Distribution>();
+    clear();
+  }
+  
+  public BasicGraph getGraph() {
+    return basicGraph;
+  }
+  
+  public Distribution getNodeDistribution(String queryStr, WalkerType walkerType) {
+    // if graph weights already exist and graph has not been modified, then just return it
+    if (!graphModifiedSinceLastWalk && queryDistCache.containsKey(queryStr + walkerType))
+      return queryDistCache.get(queryStr + walkerType);
+    
+    if (graphModifiedSinceLastWalk)
+      queryDistCache.clear();
+    
+    //  get initial distribution
+    Distribution initDist = (queryStr != null) ? basicGraph.asQueryDistribution(queryStr) : null;
+    if (initDist != null && initDist.getTotalWeight() == 0) {
+      log.error("Node \"seeds\" not found in the graph! Start walking from all nodes...");
+      initDist = null;
+    }
+
+    Walker walker = null;
+    double stayProb = 0;
+    boolean useRelation = true;
+    switch (walkerType) {
+      case NEWBASIC:
+        walker = basicWalker;
+        stayProb = 0;
+        useRelation = true;
+        break;
+      case PAGERANK:
+          log.error("not supported!");
+          //walker = pageWalker;
+        stayProb = 0.15;
+        useRelation = false;
+        break;
+      default:
+        log.error("Unknown walker: " + walkerType);
+    }
+    
+    // walk the graph
+    log.info("Walking the graph using " + walkerType + " starting from \"" + (initDist == null ? "all nodes" : queryStr) + "\" with " + (USE_SAMPLING ? GRAPH_STEPS + " steps": "no sampling") + " and " + numLevels + " levels...");
+    walker.setInitialDistribution(initDist);
+    walker.setGraph(basicGraph);
+    walker.setSamplingPolicy(USE_SAMPLING);
+    walker.setNumSteps(GRAPH_STEPS);
+    walker.setNumLevels(numLevels);
+    walker.setProbRemainAtNode(stayProb);
+    //walker.setUseRelations(useRelation);
+    walker.walk();
+    Distribution dist = walker.getNodeSample();
+    queryDistCache.put(queryStr + walkerType, dist);
+    graphModifiedSinceLastWalk = false;
+    return dist;
+  }
+  
+  public Double getProbability(String queryStr, String entity, WalkerType walkerType) {
+    GraphId id = GraphId.fromString(entity);
+    Double w = getNodeDistribution(queryStr, walkerType).getProbability(id);
+//    if (entity.equals("peter pan"))
+//      log.info("Query: " + queryStr + " Walker: " + walkerType + " Weight: " + w);
+    return (w == null) ? 0 : w;
+  }
+  
+  public Double getWeight(String queryStr, String entity, WalkerType walkerType) {
+    GraphId id = GraphId.fromString(entity);
+    Double w = getNodeDistribution(queryStr, walkerType).getWeight(id);
+    return (w == null) ? 0 : w;
+  }
+  
+//  public Walker getWalker() {
+//    return walker;
+//  }
+  
+  public void isa(String from, String to) {
+    links("isa", from, to);
+  }
+
+  public void links(String linkLabel, String from, String to) {
+    GraphId fromNode = lookupNode(from);
+    GraphId toNode = lookupNode(to);
+    basicGraph.addEdge(linkLabel, fromNode, toNode);
+    basicGraph.addEdge(linkLabel + "Inverse", toNode, fromNode);
+    graphModifiedSinceLastWalk = true;
+  }
+  
+  public void clear() {
+    basicWalker.reset();
+    //pageWalker.reset();
+    basicGraph = new BasicGraph();
+    queryDistCache.clear();
+    graphModifiedSinceLastWalk = true;
+  }
+  
+  public void setFeature(String nodeName, String key, double val) {
+    setFeature(nodeName, key, String.valueOf(val));
+  }
+  
+  public void setFeature(String nodeName, String key, String val) {
+    basicGraph.setProperty(lookupNode(nodeName), key, val);
+  }
+  
+  private GraphId lookupNode(String name) {
+    GraphId id = GraphId.fromString(name);
+    if (!basicGraph.contains(id))
+      id = basicGraph.createNode(id.getFlavor(), id.getShortName());
+    return id;
+  }
+
+  public int getNumLevels() {
+    return numLevels;
+  }
+
+  public void setNumLevels(int numLevels) {
+    this.numLevels = numLevels;
+  }
+}

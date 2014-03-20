@@ -1,0 +1,150 @@
+!-----------------------------------------------------------------------------!
+! Developed by Carnegie-Mellon Language Technologies Institute                !
+! Written by Richard Wang (rcwang#cs,cmu,edu)                                 !
+!-----------------------------------------------------------------------------!
+
+!-----------------------------------
+! Yahoo API Key
+! Pleaser provide your own
+!-----------------------------------
+yahooAPIKey = vTfDpxTV34H2rYAWCgCwINCrCiM3y3DSGz.r2HUuLz.I8ozwXd5741wnTsvQpQA-
+
+!-----------------------------------
+! Several rankers:
+! GWW: Random Walk with Restart
+! WLW: Wrapper Length
+! EDF: Extracted Document Frequency
+! EWF: Extracted Wrapper Frequency
+! ETF: Extracted Term Frequency
+! PRW: PageRank
+!-----------------------------------
+
+feature = WLW
+
+!---------------------------
+! Several seeding policies: 
+! (1) FSS_SUPERVSED          
+! (2) FSS_UNSUPERVISED     
+! (3) ISS_SUPERVSED        
+! (4) ISS_UNSUPERVISED     
+!---------------------------
+policy = ISS_UNSUPERVISED
+numTrueSeeds = 1
+numPossibleSeeds = 1
+
+!------------------------------------------------
+! Minimum number of unique seeds to bracket
+! n where n > 0: bracet at least n unique seeds
+!  0: bracket at least one instance of every seed (for non-noisy seeds)
+! -1: bracket the most unique seeds (for noisy seeds)
+! -2: bracket the most weight (for noisy seeds)
+|
+| -1 is recommended for OfflineSeal
+!------------------------------------------------
+
+minSeedsBracketed = -1
+
+!------------------------------------------------------
+! How many seeds to sample for querying search engines
+! n where n > 0: query search engine using (N choose n) queries 
+! 0: no sampling at all
+!------------------------------------------------------
+numSubSeeds = 0
+
+!------------------------------------
+! Whether or not the seeds are noisy
+!------------------------------------
+hasNoisySeeds = true
+
+!------------------------------------
+! Number of boostrapping iterations
+|
+| This is not used in OfflineSeal
+!------------------------------------
+numExpansions = 2
+
+!---- other parameters (rarely altered) ----
+numResults = 100
+minContextLength = 1
+maxDocSizeInKB = 1024
+timeOutInMS = 15000
+googleHitGapInMS = 5000
+
+!----------------------------------------
+! [Google Web] [Google API] [Yahoo! API]
+! 1: Use Yahoo! API (preferable)
+! 2: Use Google API
+! 3: Use (1) and (2)
+! 4: Use Google Web (IP could be blocked)
+! 5: Use (4) + (1)
+! 6: Use (4) + (2)
+! 7: Use (4) + (2) + (1)
+!----------------------------------------
+useEngine = 4
+
+!------------------------------------------------------
+! needs to be available at runtime
+!------------------------------------------------------
+
+stopwordsList = /usr0/wcohen/code/seal/lib/stopwords.txt
+
+!------------------------------------------------------
+! holds cache of files downloaded from web
+!
+| 
+! for WRAPPER-BUILDING: if you have a functional document 
+| cache use this
+!------------------------------------------------------
+
+cacheDir = /usr2/bigdata/seal/cache/kdd
+
+|------------------------------------------------------
+! offline access
+!
+! isFetchFromWeb: extract check. If false, disallows use of net
+| in WebManager.
+|
+! localRoot: parent directory of localDir. Contains HTML 
+|   and indices to search using OfflineSeal and the 
+!   OfflineSearcher; previously saved wrappers are also ok. 
+!   Relative or absolute paths are OK, but the tilde(~) shortcut
+!   is not supported.
+!
+! localDir: the HTML repository which was indexed for offline use. (?)
+!   If localRoot was set when the index was built, use a 
+!   path relative to localRoot. Otherwise use an absolute path.
+|
+| indexDir: holds lucene index of the HTML repository, as 
+!   created by
+|   	    java com.rcwang.seal.fetch.OfflineSearchIndexer [-wrapper]
+|   Relative or absolute paths are OK, but the tilde(~) shortcut
+!   is not supported.
+|------------------------------------------------------
+
+isFetchFromWeb = true
+
+#NOT USED IN WRAPPER-SAVING
+
+#localDir = kdd
+#localRoot = SOMEWHERE/offline-seal-data
+#indexDir = SOMEWHERE/offline-seal-data/kdd-index
+
+!------------------------------------------------------
+! whether, how and where to save wrappers
+! wrapperSaving = 0: do not save
+! wrapperSaving = 1: save in xml format in result file
+! wrapperSaving = 2: save in wrapperDir
+| 
+| savedWrapperDir: where to save wrappers 
+!------------------------------------------------------
+
+wrapperSaving = 2
+
+#replace with with the place you want to save the wrappers
+savedWrapperDir = /usr2/bigdata/seal/test/wrappers
+
+!------------------------------------------------------
+!holds seal output
+!------------------------------------------------------
+
+resultDir = ./result

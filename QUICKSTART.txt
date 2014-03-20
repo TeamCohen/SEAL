@@ -1,0 +1,84 @@
+OFFLINE SEAL
+
+This is a quickstart tutorial for using SEAL offline with the provided example 
+cache. It is largely copied from the full README, with some details added to 
+make sense outside of the CMU campus. For further details, see the full README.
+
+(1) Set yourself up to run things
+
+       % cd [this directory]
+  seal % ant                    #build a clean copy
+  seal % . user/init.sh         #set java classpath
+
+(2) Grab the example offline cache.
+
+   seal % cd cache
+  cache % wget http://curtis.ml.cmu.edu/seal/kdd-cache.tgz
+  cache % tar -xzf kdd-cache.tgz
+  
+The compressed cache is 2.3G compressed. The uncompressed cache is ~10G. 
+Expanding the archive takes at least a coffee break, and possibly lunch.
+
+(3) Configure SEAL for offline use (this properties file puts the cache and 
+    output in local subdirectories)
+
+  seal % cp config/seal.properties.offline config/seal.properties
+
+  [the key properties set here are
+  cacheDir = ./cache
+  indexDir = ./cache/kdd-index
+  isFetchFromWeb = false
+
+Note that the cache is the parent directory of the index. The way we index the 
+cache for offline queries requires this relative path.
+
+(4) Run the OfflineSEAL main program:
+
+  seal % java -Xmx512M -Dfile.encoding=UTF-8 com.rcwang.seal.expand.OfflineSeal \
+"Hugo Chavez" "Fidel Castro"
+
+  [output]
+  ...
+  INFO  	------------[ Listing 100 out of 1959 Entities ]------------
+  1.	WLW:13.146937	1.000000 Fidel Castro
+  2.	WLW:13.146937	1.000000 Hugo Chavez
+  3.	WLW:5.253033	0.396884 Joseph Stalin
+  4.	WLW:5.093924	0.384728 Benito Mussolini
+  5.	WLW:4.559130	0.343868 Adolf Hitler
+  6.	WLW:4.432416	0.334187 Saddam Hussein
+  7.	WLW:4.428741	0.333906 Pol Pot
+  8.	WLW:4.204705	0.316789 Robert Mugabe
+  9.	WLW:3.796042	0.285566 Nicolae Ceausescu
+  10.	WLW:3.522257	0.264648 Francisco Franco
+  11.	WLW:3.360881	0.252319 Kim Jong Il
+  12.	WLW:3.271867	0.245518 Augusto Pinochet
+  13.	WLW:3.116030	0.233611 United Nations
+  14.	WLW:2.949001	0.220850 Mao Zedong
+  15.	WLW:2.730774	0.204177 Daniel Ortega
+  16.	WLW:2.583355	0.192914 Mexico
+  17.	WLW:2.403518	0.179173 Angela Merkel
+  18.	WLW:2.376755	0.177129 Ho Chi Minh
+  19.	WLW:2.358504	0.175734 United States
+  20.	WLW:2.308573	0.171919 Manuel Noriega
+  ...
+  94.	WLW:1.450245	0.106341 Attila The Hun
+  95.	WLW:1.449956	0.106319 Josef Stalin
+  96.	WLW:1.357247	0.099235 Caligula
+  97.	WLW:1.357247	0.099235 Nero
+  98.	WLW:1.336532	0.097653 KGB
+  99.	WLW:1.307226	0.095414 Socialism
+  100.	WLW:1.298952	0.094782 Europe
+	  ------------------------------------------------------------------
+  INFO   Memory used: 28.30MB
+  INFO  Elapsed time: 8.695 seconds
+
+(5) Going further: you may wish to consult the full readme for topics like:
+
+  - running SEAL in online mode
+  - constructing and indexing a cache from scratch
+
+
+QUESTIONS AND COMMENTS
+
+William Cohen <wcohen@cs.cmu.edu>
+Katie Rivard <krivard@cs.cmu.edu>

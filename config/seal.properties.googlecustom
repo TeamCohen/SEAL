@@ -1,0 +1,96 @@
+!-----------------------------------------------------------------------------!
+! Developed by Carnegie-Mellon Language Technologies Institute                !
+! Written by Richard Wang (rcwang#cs,cmu,edu)                                 !
+!-----------------------------------------------------------------------------!
+
+!-----------------------------------
+! Yahoos API Key
+! Please provide your own
+!-----------------------------------
+yahooAPIKey = GyJlmi3V34GZPzUf6sQd9ihb2PslaIffGHY4ucGxTvECdsLMX03hqBDklDKpEg--
+
+!-----------------------------------
+! Bing API Key
+! Please provide your own
+!-----------------------------------
+bingAPIKey = 80A9FAFEA1AB379783520798B0A1E51A6A6E97C3
+
+!-----------------------------------
+! Google Custom Search API Key
+! Please provide your own
+!-----------------------------------
+googleCustomAPIKey = AIzaSyBA-phjQc5udwGuXqzlC1C6NOeDW3kaJvs
+
+!-----------------------------------
+! Several rankers:
+! GWW: Random Walk with Restart
+! WLW: Wrapper Length
+! EDF: Extracted Document Frequency
+! EWF: Extracted Wrapper Frequency
+! ETF: Extracted Term Frequency
+! PRW: PageRank
+!-----------------------------------
+feature = GWW
+
+!---------------------------
+! Several seeding policies: 
+! (1) FSS_SUPERVSED          
+! (2) FSS_UNSUPERVISED     
+! (3) ISS_SUPERVSED        
+! (4) ISS_UNSUPERVISED     
+!---------------------------
+policy = ISS_UNSUPERVISED
+numTrueSeeds = 1
+numPossibleSeeds = 1
+
+!------------------------------------------------
+! Minimum number of unique seeds to bracket
+! n where n > 0: bracet at least n unique seeds
+!  0: bracket at least one instance of every seed (for non-noisy seeds)
+! -1: bracket the most unique seeds (for noisy seeds)
+! -2: bracket the most weight (for noisy seeds)
+!------------------------------------------------
+minSeedsBracketed = 0
+
+!------------------------------------------------------
+! How many seeds to sample for querying search engines
+! n where n > 0: query search engine using (N choose n) queries 
+! 0: no sampling at all
+!------------------------------------------------------
+numSubSeeds = 0
+
+!------------------------------------
+! Whether or not the seeds are noisy
+!------------------------------------
+hasNoisySeeds = true
+
+!------------------------------------
+! Number of boostrapping iterations
+!------------------------------------
+numExpansions = 10
+
+!---- other parameters (rarely altered) ----
+numResults = 100
+minContextLength = 1
+maxDocSizeInKB = 1024
+timeOutInMS = 15000
+googleHitGapInMS = 5000
+
+!----------------------------------------------------------------
+!   16       8           4              2                1
+! [Bing] [ClueWeb] [Google Web] [Google Custom API] [Yahoo! API]
+!
+! 1: Use Yahoo! API (preferable)
+! 2: Use Google API
+! 3: Use (1) and (2)
+! 4: Use Google Web (IP could be blocked)
+! 5: Use (4) + (1)
+! 6: Use (4) + (2)
+! 7: Use (4) + (2) + (1)
+!----------------------------------------
+useEngine = 2
+
+##### directories #####
+resultDir = ./result
+cacheDir = ./cache
+stopwordsList = ./lib/stopwords.txt

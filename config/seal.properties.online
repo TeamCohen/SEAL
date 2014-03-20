@@ -1,0 +1,95 @@
+!-----------------------------------------------------------------------------!
+! Developed by Carnegie-Mellon Language Technologies Institute                !
+! Written by Richard Wang (rcwang#cs,cmu,edu)                                 !
+!-----------------------------------------------------------------------------!
+
+!-----------------------------------
+! Yahoos API Key
+! Pleaser provide your own
+!-----------------------------------
+yahooAPIKey = GyJlmi3V34GZPzUf6sQd9ihb2PslaIffGHY4ucGxTvECdsLMX03hqBDklDKpEg--
+
+
+!-----------------------------------
+! Bing API Key
+! Pleaser provide your own
+!-----------------------------------
+bingAPIKey = 80A9FAFEA1AB379783520798B0A1E51A6A6E97C3
+
+!-----------------------------------
+! Several rankers:
+! GWW: Random Walk with Restart
+! WLW: Wrapper Length
+! EDF: Extracted Document Frequency
+! EWF: Extracted Wrapper Frequency
+! ETF: Extracted Term Frequency
+! PRW: PageRank
+!-----------------------------------
+feature = GWW
+
+!---------------------------
+! Several seeding policies: 
+! (1) FSS_SUPERVSED          
+! (2) FSS_UNSUPERVISED     
+! (3) ISS_SUPERVSED        
+! (4) ISS_UNSUPERVISED     
+!---------------------------
+policy = ISS_UNSUPERVISED
+numTrueSeeds = 1
+numPossibleSeeds = 1
+
+!------------------------------------------------
+! Minimum number of unique seeds to bracket
+! n where n > 0: bracet at least n unique seeds
+!  0: bracket at least one instance of every seed (for non-noisy seeds)
+! -1: bracket the most unique seeds (for noisy seeds)
+! -2: bracket the most weight (for noisy seeds)
+!------------------------------------------------
+minSeedsBracketed = 0
+
+!------------------------------------------------------
+! How many seeds to sample for querying search engines
+! n where n > 0: query search engine using (N choose n) queries 
+! 0: no sampling at all
+!------------------------------------------------------
+numSubSeeds = 0
+
+!------------------------------------
+! Whether or not the seeds are noisy
+!------------------------------------
+hasNoisySeeds = true
+
+!------------------------------------
+! Number of boostrapping iterations
+!------------------------------------
+numExpansions = 10
+
+!---- other parameters (rarely altered) ----
+numResults = 100
+minContextLength = 1
+maxDocSizeInKB = 1024
+timeOutInMS = 15000
+googleHitGapInMS = 5000
+
+!----------------------------------------
+! Which search engine to use: bitfield
+! NB: 
+!   Yahoo! API is obsolete
+!   Google Custom API requires an API key
+!   Hammering on Google Web can get your IP blacklisted for 24 hours
+!   ClueWeb cannot be combined with other engines
+!   Bing API requires an API key and is set to go obsolete in July(?) 2012
+!
+! [Bing] [ClueWeb] [Google Web] [Google Custom API] [Yahoo! API]
+!   16       8           4                2            1
+!
+! For OfflineSEAL use, ignore this and just set the offline params 
+! in Engine-Specific-Parameters below. See SEAL project docs for
+! instructions on building a compatible index.
+!----------------------------------------
+useEngine = 4
+
+##### directories #####
+resultDir = ./result
+cacheDir = ./cache
+stopwordsList = ./lib/stopwords.txt

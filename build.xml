@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<project name="SEAL" default="all" basedir=".">
+
+	<description>
+		This is Ant build file for SEAL (Set Expander for Any Language)
+		Copyright 2007 Richard C. Wang (rcwang.com)
+	</description>
+
+	<tstamp>
+    <format property="version.minor" pattern="yyMMdd" locale="en"/>
+  </tstamp>
+
+	<target name="init" depends="" description="Initialize environment">
+
+		<!-- Configure paths -->
+		<property name="path.src" value="src"/>
+		<property name="path.test" value="test"/>
+		<property name="path.lib" value="lib"/>
+		<property name="path.dist" value="dist"/>
+		<property name="path.classes" value="bin"/>
+		<property name="path.javadoc" value="javadoc"/>
+
+		<!-- Configure compilation parameters -->
+		<property name="compile.debug" value="true"/>
+		<property name="compile.deprecation" value="true"/>
+		<property name="compile.jdk-version.source" value="1.5"/>
+		<property name="compile.jdk-version.target" value="1.5"/>
+		<property name="compile.optimize" value="true"/>
+		<property file="${basedir}${file.separator}build.properties"/>
+		<path id="compile.classpath">
+			<fileset dir="${path.lib}">
+				<include name="*.jar"/>
+			</fileset>
+    </path>
+
+		<!-- Configure component information -->
+		<property name="author.id" value="rcwang"/>
+		<property name="author.name" value="Richard C. Wang"/>
+		<property name="version.major" value="3"/>
+		<property name="component.name" value="seal"/>
+		<property name="component.version" value="${version.major}.${version.minor}"/>
+		<property name="component.title" value="Set Expander for Any Language"/>
+
+		<!-- Configure file names -->
+		<property name="zipfile.name" value="${component.name}-${component.version}-src.zip"/>
+		<property name="jarfile.name" value="${path.dist}/${component.name}-${component.version}.jar"/>
+
+		<!-- Configure manifest parameters -->
+		<property name="manifest.mainclass" value="com.${author.id}.${component.name}.expand.Seal"/>
+		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="compile.classpath">
+			<map from="${basedir}${file.separator}${path.lib}${file.separator}" to="" />
+		</pathconvert>
+
+	</target>
+
+	<target name="make_directories" description="Creates all project directories" depends="init">
+		<mkdir dir="${path.classes}"/>
+		<mkdir dir="${path.lib}"/>
+		<mkdir dir="${path.dist}"/>
+		<mkdir dir="${path.src}"/>
+		<mkdir dir="${path.test}"/>
+	</target>
+
+	<target name="prepare" depends="init, make_directories" description="Prepare build directory"/>
+
+	<target name="compile" depends="prepare" description="Compile source">
+		<javac debug="${compile.debug}"
+					 deprecation="${compile.deprecation}"
+					 destdir="${path.classes}"
+					 target="${compile.jdk-version.target}"
+					 source="${compile.jdk-version.source}"
+					 optimize="${compile.optimize}"
+					 srcdir="${path.src}">
+		    <classpath refid="compile.classpath"/>
+		</javac>
+	</target>
+
+	<target name="clean" depends="init" description="Wipeout all generated files">
+	    <delete dir="${path.classes}"/>
+	</target>
+
+	<target name="all" depends="clean, compile" description="Clean and compile all components"/>
+
+	<target name="javadoc" depends="compile" description="Create component Javadoc documentation">
+		<delete dir="${path.javadoc}"/>
+		<mkdir dir="${path.javadoc}"/>
+		<javadoc author="true"
+						 bottom="${component.title}"
+						 destdir="${path.javadoc}"
+						 source="${compile.jdk-version.source}"
+						 doctitle="${component.title}"
+						 packagenames="*"
+						 access="protected"
+						 sourcepath="${path.src}"
+						 version="true"
+						 encoding="UTF-8"
+						 windowtitle="${component.title} (Version ${component.version})">
+		    <classpath refid="compile.classpath"/>
+		</javadoc>
+	</target>
+
+	<target name="jar" depends="compile" description="Create binary distribution">
+		<delete>
+			<fileset dir="${path.lib}" includes="${component.name}-*.jar"/>
+		</delete>
+		<jar basedir="${path.classes}" jarfile="${jarfile.name}">
+			<include name="**/*.class"/>
+			<manifest>
+				<attribute name="Sealed" value="true"/>
+				<attribute name="Built-By" value="${author.id}"/>
+				<attribute name="Class-Path" value="${manifest.classpath}"/>
+				<attribute name="Main-Class" value="${manifest.mainclass}"/>
+				<attribute name="Specification-Title" value="${component.title}"/>
+				<attribute name="Specification-Version" value="${version.major}"/>
+				<attribute name="Specification-Vendor" value="${author.name}"/>
+				<attribute name="Implementation-Title" value="com.${author.id}.${component.name}"/>
+				<attribute name="Implementation-Version" value="${version.minor}"/>
+				<attribute name="Implementation-Vendor" value="${author.name}"/>
+			</manifest>
+		</jar>
+		<jar update="true" basedir="." jarfile="${jarfile.name}">
+			<include name="${path.src}/**"/>
+			<include name="${path.javadoc}/**"/>
+		</jar>
+	</target>
+
+	<target name="src-zip" depends="compile" description="Creates source distribution">
+		<zip basedir="." destfile="${zipfile.name}" whenempty="fail">
+			<include name="**/*.*"/>
+			<include name="*"/>
+			<include name="**/*"/>
+			<exclude name="*.*~"/>			<!-- JEdit backups -->
+			<exclude name=".nbattrs"/>	<!-- Netbeans filesystem attributes -->
+			<exclude name="*.old"/>			<!-- Other backups -->
+			<exclude name="${zipfile.name}"/>
+		</zip>
+	</target>
+
+	<target name="dist" depends="jar, javadoc, src-zip" description="Creates full distribution"/>
+
+</project>
